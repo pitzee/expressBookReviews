@@ -82,18 +82,38 @@ public_users.get('/title/:title',function (req, res) {
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
     const requestedISBN = req.params.isbn; // Retrieve the ISBN from request parameters
+    const reviewText = req.query.review; // Retrieve the review text from the query parameter
+    const token = req.session.token; // Retrieve the JWT token from the session (set during login)
 
-    // Find the book with the matching ISBN
-    const book = books[requestedISBN];
+    // Verify the token (you can use middleware for this)
+    try {
+        const decoded = jwt.verify(token, 'your-secret-key'); // Verify the token
+        const username = decoded.username; // Extract the username from the token
 
-    if (!book) {
-        return res.status(404).json({ message: 'Book not found' });
+        // Find the book with the matching ISBN
+        const book = books[requestedISBN];
+
+        if (!book) {
+            return res.status(404).json({ message: 'Book not found' });
+        }
+
+        // Add or modify the review
+        if (book.reviews && book.reviews[username]) {
+            // User has already reviewed this book, modify the existing review
+            book.reviews[username] = reviewText;
+        } else {
+            // User is posting a new review
+            if (!book.reviews) {
+                book.reviews = {}; // Initialize the reviews object if it doesn't exist
+            }
+            book.reviews[username] = reviewText;
+        }
+
+        return res.status(200).json({ message: 'Review added/modified successfully' });
+    } catch (error) {
+        return res.status(401).json({ message: 'Invalid token' });
     }
-
-    // Retrieve book reviews (assuming reviews are stored in the 'reviews' property)
-    const reviews = book.reviews || {};
-
-    return res.status(200).json({ reviews });
+    
 });
 
 module.exports.general = public_users;

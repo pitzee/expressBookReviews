@@ -47,8 +47,69 @@ regd_users.post("/login", (req,res) => {
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+    const requestedISBN = req.params.isbn; // Retrieve the ISBN from request parameters
+    const reviewText = req.query.review; // Retrieve the review text from the query parameter
+    const token = req.session.token; // Retrieve the JWT token from the session (set during login)
+
+    // Verify the token (you can use middleware for this)
+    try {
+        const decoded = jwt.verify(token, 'your-secret-key'); // Verify the token
+        const username = decoded.username; // Extract the username from the token
+
+        // Find the book with the matching ISBN
+        const book = books[requestedISBN];
+
+        if (!book) {
+            return res.status(404).json({ message: 'Book not found' });
+        }
+
+        // Add or modify the review
+        if (book.reviews && book.reviews[username]) {
+            // User has already reviewed this book, modify the existing review
+            book.reviews[username] = reviewText;
+        } else {
+            // User is posting a new review
+            if (!book.reviews) {
+                book.reviews = {}; // Initialize the reviews object if it doesn't exist
+            }
+            book.reviews[username] = reviewText;
+        }
+
+        return res.status(200).json({ message: 'Review added/modified successfully' });
+    } catch (error) {
+        return res.status(401).json({ message: 'Invalid token' });
+    }
+
+});
+
+regd_users.delete('/auth/review/:isbn', (req, res) => {
+    const requestedISBN = req.params.isbn; // Retrieve the ISBN from request parameters
+    const token = req.session.token; // Retrieve the JWT token from the session (set during login)
+
+    // Verify the token (you can use middleware for this)
+    try {
+        const decoded = jwt.verify(token, 'your-secret-key'); // Verify the token
+        const username = decoded.username; // Extract the username from the token
+
+        // Find the book with the matching ISBN
+        const book = books[requestedISBN];
+
+        if (!book) {
+            return res.status(404).json({ message: 'Book not found' });
+        }
+
+        // Check if the user has reviewed this book
+        if (!book.reviews || !book.reviews[username]) {
+            return res.status(404).json({ message: 'Review not found' });
+        }
+
+        // Delete the user's review
+        delete book.reviews[username];
+
+        return res.status(200).json({ message: 'Review deleted successfully' });
+    } catch (error) {
+        return res.status(401).json({ message: 'Invalid token' });
+    }
 });
 
 module.exports.authenticated = regd_users;
