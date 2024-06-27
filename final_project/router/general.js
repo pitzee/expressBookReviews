@@ -34,7 +34,7 @@ public_users.get('/',function (req, res) {
     return res.status(200).json({ books:bookList });
 });
 
-// Assuming your API endpoint for book list is something like this:
+
 const BOOKS_API_URL = books;
 
 // Get the book list available in the shop (async/await with Axios)
@@ -67,6 +67,28 @@ public_users.get('/isbn/:isbn',function (req, res) {
     return res.status(200).json({ book });
  });
   
+
+// Get book details based on ISBN (async/await with Axios)
+public_users.get('/isbn/:isbn', async (req, res) => {
+    const requestedISBN = req.params.isbn;
+
+    try {
+        const response = await axios.get(`${BOOKS_API_URL}/${requestedISBN}`);
+        const book = response.data; // Adjust the property names as needed
+
+        if (!book) {
+            return res.status(404).json({ message: 'Book not found' });
+        }
+
+        return res.status(200).json({ book });
+    } catch (error) {
+        console.error('Error fetching book details:', error.message);
+        return res.status(500).json({ message: 'Error fetching book details' });
+    }
+});
+
+
+
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
     const requestedAuthor = req.params.author; // Retrieve the author name from request parameters
