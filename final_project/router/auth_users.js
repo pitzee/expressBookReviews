@@ -6,11 +6,18 @@ const regd_users = express.Router();
 let users = [];
 
 const isValid = (username)=>{ //returns boolean
-//write code to check is the username is valid
+    const isValid = (username) => {
+    // Customize your validation rules here
+    const minLength = 4; // Minimum username length
+
+    // Check if the username meets the criteria
+    return typeof username === 'string' && username.length >= minLength;
+};
+
 }
 
 const authenticatedUser = (username,password)=>{ //returns boolean
-//write code to check if username and password match the one we have in records.
+    return true;
 }
 
 //only registered users can login

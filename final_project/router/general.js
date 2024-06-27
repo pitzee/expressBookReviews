@@ -3,6 +3,7 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
+const axios = require('axios');
 
 
 public_users.post("/register", (req,res) => {
@@ -30,7 +31,24 @@ public_users.post("/register", (req,res) => {
 public_users.get('/',function (req, res) {
     const bookList = Object.values(books); // Retrieve all books from the data
 
-    return res.status(200).json({ books: JSON.stringify(bookList) });
+    return res.status(200).json({ books:bookList });
+});
+
+// Assuming your API endpoint for book list is something like this:
+const BOOKS_API_URL = books;
+
+// Get the book list available in the shop (async/await with Axios)
+public_users.get('/', async (req, res) => {
+    try {
+        const response = await axios.get(BOOKS_API_URL);
+        const bookList = response.data.books; // Adjust the property name as needed
+
+        // Return the book list
+        return res.status(200).json({ books: bookList });
+    } catch (error) {
+        console.error('Error fetching book list:', error.message);
+        return res.status(500).json({ message: 'Error fetching book list' });
+    }
 });
 
 
