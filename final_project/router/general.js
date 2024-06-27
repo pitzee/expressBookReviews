@@ -104,6 +104,28 @@ public_users.get('/author/:author',function (req, res) {
     return res.status(200).json({ books: authorBooks });
 });
 
+
+// Get book details based on author (async/await with Axios)
+public_users.get('/author/:author', async (req, res) => {
+    const requestedAuthor = req.params.author;
+
+    try {
+        const response = await axios.get(`${BOOKS_API_URL}/${requestedAuthor}`);
+        const authorBooks = response.data; // Adjust the property names as needed
+
+        if (!authorBooks || authorBooks.length === 0) {
+            return res.status(404).json({ message: 'No books found for this author' });
+        }
+
+        return res.status(200).json({ books: authorBooks });
+    } catch (error) {
+        console.error('Error fetching author books:', error.message);
+        return res.status(500).json({ message: 'Error fetching author books' });
+    }
+});
+
+
+
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
     const requestedTitle = req.params.title; // Retrieve the title from request parameters
